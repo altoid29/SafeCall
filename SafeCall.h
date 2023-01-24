@@ -35,6 +35,8 @@
 	- EXE (Executable)
 */
 
+#pragma once
+
 // Windows OS check.
 #if defined(_WIN32) || defined(_WIN64)
 
