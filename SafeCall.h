@@ -138,7 +138,7 @@ namespace SafeCall
 
 				HMODULE base = (HMODULE)tableEntry->DllBase;
 
-				// Note -  Hash can be used.
+				// Note - Hash can be used.
 				if (!strcmp(moduleName.c_str(), currentIteratedModuleName.c_str()))
 					return (HMODULE)tableEntry->DllBase;
 
@@ -169,7 +169,7 @@ namespace SafeCall
 			{
 				const char* currentExportName = reinterpret_cast<const char*>(base + reinterpret_cast<ULONG*>(base + exportDirectory->AddressOfNames)[i]);
 
-				// Note -  Hash can be used.
+				// Note - Hash can be used.
 				if (!strcmp(exportName.c_str(), currentExportName))
 				{
 					const USHORT ordinal = reinterpret_cast<USHORT*>(base + exportDirectory->AddressOfNameOrdinals)[i];
@@ -194,7 +194,6 @@ namespace SafeCall
 			if (!moduleAddress)
 				return NULL;
 
-			// Failed to acquire the module base address.
 			static auto PatternToByte = [](const char* pattern)
 			{
 				auto bytes = std::vector<int>{};
@@ -369,8 +368,6 @@ namespace SafeCall
 // moduleNameToGetGadgetFrom = The module (.dll or .exe) to have the return address appear in.
 #define SAFECALL_STDCALL(type, moduleName, exportName, moduleNameToGetGadgetFrom, ...) \
 SafeCall::Type::Stdcall<type>(SafeCall::Address::GetExport(moduleName, exportName), SafeCall::Address::GetGadget(moduleNameToGetGadgetFrom), __VA_ARGS__);
-
-// SafeCall::Type::Thiscall<uint64_t>(NULL, uintptr_t(1337), uintptr_t(1337), NULL);
 
 // type = Function value type.
 // moduleName = Module name to get the export in.
