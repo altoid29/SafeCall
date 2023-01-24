@@ -112,7 +112,7 @@ namespace SafeCall
 	{
 		// --------------------------------------------------------------------------------------------------------------------------------------------------------
 
-		HMODULE GetModule(std::string moduleName)
+		inline HMODULE GetModule(std::string moduleName)
 		{
 			// Get PEB data.
 #ifdef _WIN64
