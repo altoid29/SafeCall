@@ -300,7 +300,7 @@ namespace SafeCall
 		// --------------------------------------------------------------------------------------------------------------------------------------------------------
 
 		template <typename T, typename... Args>
-		inline __declspec(naked) T __cdecl Cdecl(uintptr_t functionAddress, Context_t& context, uintptr_t gadgetAddress, Args... arguments) noexcept
+		inline __declspec(naked) T __cdecl Cdecl(uintptr_t, const Context_t&, uintptr_t, Args...) noexcept
 		{
 			__asm
 			{
