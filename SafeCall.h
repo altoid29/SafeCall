@@ -112,7 +112,7 @@ namespace SafeCall
 	{
 		// --------------------------------------------------------------------------------------------------------------------------------------------------------
 
-		inline HMODULE GetModule(std::string moduleName)
+		inline HMODULE GetModule(const std::string moduleName)
 		{
 			// Get PEB data.
 #ifdef _WIN64
@@ -141,7 +141,7 @@ namespace SafeCall
 				HMODULE base = (HMODULE)tableEntry->DllBase;
 
 				// Note - Hash can be used.
-				if (!strcmp(moduleName.c_str(), currentIteratedModuleName.c_str()))
+				if (!strcmp(std::move(moduleName.c_str()), currentIteratedModuleName.c_str()))
 					return (HMODULE)tableEntry->DllBase;
 
 				// Update flink.
@@ -153,9 +153,9 @@ namespace SafeCall
 
 		// --------------------------------------------------------------------------------------------------------------------------------------------------------
 
-		inline uintptr_t GetExport(std::string moduleName, std::string exportName)
+		inline uintptr_t GetExport(const std::string moduleName, const std::string exportName)
 		{
-			unsigned char* base = reinterpret_cast<unsigned char*>(GetModule(moduleName));
+			unsigned char* base = reinterpret_cast<unsigned char*>(GetModule(std::move(moduleName)));
 			if (!base)
 				return NULL;
 
@@ -172,7 +172,7 @@ namespace SafeCall
 				const char* currentExportName = reinterpret_cast<const char*>(base + reinterpret_cast<ULONG*>(base + exportDirectory->AddressOfNames)[i]);
 
 				// Note - Hash can be used.
-				if (!strcmp(exportName.c_str(), currentExportName))
+				if (!strcmp(std::move(exportName.c_str()), currentExportName))
 				{
 					const USHORT ordinal = reinterpret_cast<USHORT*>(base + exportDirectory->AddressOfNameOrdinals)[i];
 					return reinterpret_cast<uintptr_t>(base + reinterpret_cast<ULONG*>(base + exportDirectory->AddressOfFunctions)[ordinal]);
@@ -185,12 +185,12 @@ namespace SafeCall
 
 		// --------------------------------------------------------------------------------------------------------------------------------------------------------
 
-		inline uintptr_t GetGadget(std::string moduleName)
+		inline uintptr_t GetGadget(const std::string moduleName)
 		{
 			constexpr const char* signature = "FF 23"; // jmp dword ptr [ebx]
 			std::vector<uint8_t*>addresses{};
 
-			const HMODULE moduleAddress = GetModule(moduleName.c_str());
+			const HMODULE moduleAddress = GetModule(std::move(moduleName.c_str()));
 
 			// Failed to find base address.
 			if (!moduleAddress)
@@ -277,7 +277,7 @@ namespace SafeCall
 		// --------------------------------------------------------------------------------------------------------------------------------------------------------
 
 		template <typename T, typename... Args>
-		inline __declspec(naked) T __fastcall Fastcall(uintptr_t ecx, uintptr_t edx, uintptr_t functionAddress, Context_t& context, uintptr_t gadgetAddress, Args... arguments) noexcept
+		inline __declspec(naked) T __fastcall Fastcall(uintptr_t, uintptr_t, uintptr_t, const Context_t&, uintptr_t, Args...) noexcept
 		{
 			__asm
 			{
