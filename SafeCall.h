@@ -260,7 +260,7 @@ namespace SafeCall {
 		};
 
 		template <typename T, typename... Parameters>
-		inline __declspec(naked) T __fastcall Fastcall(uintptr_t ecx, uintptr_t edx, uintptr_t functionAddress, Data& data, uintptr_t gadgetAddress, Parameters... parameters) {
+		inline __declspec(naked) T __fastcall Fastcall(uintptr_t, uintptr_t, uintptr_t, Data&, uintptr_t, Parameters...) {
 			__asm {
 				mov eax, [esp + 8];
 				mov[eax], ebx;
@@ -279,7 +279,7 @@ namespace SafeCall {
 		}
 
 		template <typename T, typename... Parameters>
-		inline __declspec(naked) T __cdecl Cdecl(uintptr_t functionAddress, Data& data, uintptr_t gadgetAddress, Parameters... parameters) {
+		inline __declspec(naked) T __cdecl Cdecl(uintptr_t, Data&, uintptr_t, Parameters...) {
 			__asm {
 				mov eax, [esp + 8];
 				mov[eax], ebx;
@@ -301,7 +301,7 @@ namespace SafeCall {
 
 	namespace Type {
 		template <typename T, typename... Parameters>
-		inline T Fastcall(std::uintptr_t ecx, std::uintptr_t edx, std::uintptr_t functionAddress, std::uintptr_t gadgetAddress, Parameters... parameters) {
+		inline T Fastcall(uintptr_t ecx, uintptr_t edx, uintptr_t functionAddress, uintptr_t gadgetAddress, Parameters... parameters) {
 			Impl::Data data;
 			return Impl::Fastcall<T>(ecx, edx, functionAddress, data, gadgetAddress, parameters...);
 		}
