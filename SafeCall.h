@@ -284,7 +284,8 @@ namespace SafeCall
 		template <typename T, typename... Parameters>
 		inline __declspec(naked) T __fastcall Fastcall(uintptr_t, uintptr_t, uintptr_t, Data&, uintptr_t, Parameters...)
 		{
-			__asm {
+			__asm
+			{
 				mov eax, [esp + 8];
 				mov[eax], ebx;
 				lea ebx, ReturnHereFromGadget; // Load effective address of Gadget into ebx.
@@ -304,7 +305,8 @@ ReturnHereFromGadget:
 		template <typename T, typename... Parameters>
 		inline __declspec(naked) T __cdecl Cdecl(uintptr_t, Data&, uintptr_t, Parameters...)
 		{
-			__asm {
+			__asm 
+			{
 				mov eax, [esp + 8];
 				mov[eax], ebx;
 				lea ebx, ReturnHereFromGadget; // Load effective address of Gadget into ebx.
