@@ -39,14 +39,16 @@
 #include <minwindef.h>
 #include <intrin.h>
 
-typedef struct PEB_LOADER_DATA {
+typedef struct PEB_LOADER_DATA
+{
 	UINT8 _PADDING_[12];
 	LIST_ENTRY InLoadOrderModuleList;
 	LIST_ENTRY InMemoryOrderModuleList;
 	LIST_ENTRY InInitializationOrderModuleList;
 } PEB_LOADER_DATA, * PPEB_LOADER_DATA;
 
-typedef struct PEB_NEW {
+typedef struct PEB_NEW
+{
 #ifdef _WIN64
 	UINT8 _PADDING_[24];
 #else
@@ -55,13 +57,15 @@ typedef struct PEB_NEW {
 	PEB_LOADER_DATA* Ldr;
 } PEB_NEW, * PPEB_NEW;
 
-typedef struct _UNICODE_STRINGG {
+typedef struct _UNICODE_STRINGG
+{
 	USHORT Length;
 	USHORT MaximumLength;
 	PWSTR  Buffer;
 } UNICODE_STRINGG;
 
-typedef struct LOADER_TABLE_ENTRY {
+typedef struct LOADER_TABLE_ENTRY
+{
 	LIST_ENTRY				InLoadOrderLinks;
 	LIST_ENTRY				InMemoryOrderLinks;
 	LIST_ENTRY				InInitializationOrderLinks;
@@ -84,9 +88,12 @@ typedef struct LOADER_TABLE_ENTRY {
 	uintptr_t				ParentDllBase;
 } LOADER_TABLE_ENTRY, * PLOADER_TABLE_ENTRY;
 
-namespace SafeCall {
-	namespace Address {
-		inline HMODULE GetModule(const std::string moduleName) {
+namespace SafeCall
+{
+	namespace Address
+	{
+		inline HMODULE GetModule(const std::string moduleName)
+		{
 			// Get PEB data.
 #ifdef _WIN64
 			PEB_NEW* peb = (PEB_NEW*)__readgsqword(0x60);
@@ -100,7 +107,8 @@ namespace SafeCall {
 			PLOADER_TABLE_ENTRY tableEntry = nullptr;
 
 			// Iterate each module.
-			while (listEntry != &peb->Ldr->InLoadOrderModuleList && listEntry) {
+			while (listEntry != &peb->Ldr->InLoadOrderModuleList && listEntry)
+			{
 				// Declare table.
 				tableEntry = CONTAINING_RECORD(listEntry, LOADER_TABLE_ENTRY, InLoadOrderLinks);
 
@@ -151,7 +159,7 @@ namespace SafeCall {
 				std::transform(name.begin(), name.end(), name.begin(), ::tolower);
 
 				list.push_back(name);
-			
+
 				// Update listEntry.
 				listEntry = listEntry->Flink;
 			}
@@ -159,23 +167,26 @@ namespace SafeCall {
 			return list;
 		}*/
 
-		inline uintptr_t GetExport(const std::string moduleName, const std::string exportName) {
+		inline uintptr_t GetExport(const std::string moduleName, const std::string exportName)
+		{
 			unsigned char* base = reinterpret_cast<unsigned char*>(GetModule(moduleName));
 			if (!base)
 				return NULL;
 
 			// Get header data.
 			const PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)base;
-			const PIMAGE_NT_HEADERS ntHeaders = (PIMAGE_NT_HEADERS)((uintptr_t)(base) + dosHeader->e_lfanew);
+			const PIMAGE_NT_HEADERS ntHeaders = (PIMAGE_NT_HEADERS)((uintptr_t)(base)+dosHeader->e_lfanew);
 
 			// Get export table.
 			const PIMAGE_EXPORT_DIRECTORY exportDirectory = (PIMAGE_EXPORT_DIRECTORY)((uintptr_t)base + ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
 
 			// Iterate export table and print useful data.
-			for (size_t i = 0; i < exportDirectory->NumberOfNames; i++) {
+			for (size_t i = 0; i < exportDirectory->NumberOfNames; i++)
+			{
 				const char* currentExportName = reinterpret_cast<const char*>(base + reinterpret_cast<ULONG*>(base + exportDirectory->AddressOfNames)[i]);
 
-				if (!strcmp(exportName.c_str(), currentExportName)) {
+				if (!strcmp(exportName.c_str(), currentExportName))
+				{
 					const USHORT ordinal = reinterpret_cast<USHORT*>(base + exportDirectory->AddressOfNameOrdinals)[i];
 					return reinterpret_cast<uintptr_t>(base + reinterpret_cast<ULONG*>(base + exportDirectory->AddressOfFunctions)[ordinal]);
 				}
@@ -185,7 +196,8 @@ namespace SafeCall {
 			return NULL;
 		}
 
-		inline uintptr_t GetGadget(const std::string moduleName) {
+		inline uintptr_t GetGadget(const std::string moduleName)
+		{
 			constexpr const char* signature = "FF 23"; // jmp dword ptr [ebx]
 			std::vector<uint8_t*>addresses{};
 
@@ -195,13 +207,16 @@ namespace SafeCall {
 			if (!moduleAddress)
 				return NULL;
 
-			static auto PatternToByte = [](const char* pattern) {
+			static auto PatternToByte = [](const char* pattern)
+			{
 				auto bytes = std::vector<int>{};
 				auto start = const_cast<char*>(pattern);
 				auto end = const_cast<char*>(pattern) + std::strlen(pattern);
 
-				for (auto current = start; current < end; current++) {
-					if (*current == '?') {
+				for (auto current = start; current < end; current++)
+				{
+					if (*current == '?')
+					{
 						current++;
 
 						if (*current == '?')
@@ -224,11 +239,14 @@ namespace SafeCall {
 			auto size = patternBytes.size();
 			auto data = patternBytes.data();
 
-			for (auto i = 0ul; i < imageSize - size; i++) {
+			for (auto i = 0ul; i < imageSize - size; i++)
+			{
 				bool found = true;
 
-				for (auto j = 0ul; j < size; j++) {
-					if (scannedBytes[i + j] != data[j] && data[j] != -1) {
+				for (auto j = 0ul; j < size; j++)
+				{
+					if (scannedBytes[i + j] != data[j] && data[j] != -1)
+					{
 						found = false;
 						break;
 					}
@@ -240,8 +258,10 @@ namespace SafeCall {
 			}
 
 			// Iterate through all addresses to ensure we have a valid address. 
-			if (addresses.size()) {
-				for (auto c : addresses) {
+			if (addresses.size())
+			{
+				for (auto c : addresses)
+				{
 					if (c != nullptr)
 						return (uintptr_t)c;
 				}
@@ -252,15 +272,18 @@ namespace SafeCall {
 		}
 	}
 
-	namespace Impl {
-		struct Data {
+	namespace Impl
+	{
+		struct Data
+		{
 			ULONG oldEbx{};
 			ULONG addressToJumpToInGadget{};
 			ULONG invokedReturnAddress{};
 		};
 
 		template <typename T, typename... Parameters>
-		inline __declspec(naked) T __fastcall Fastcall(uintptr_t, uintptr_t, uintptr_t, Data&, uintptr_t, Parameters...) {
+		inline __declspec(naked) T __fastcall Fastcall(uintptr_t, uintptr_t, uintptr_t, Data&, uintptr_t, Parameters...)
+		{
 			__asm {
 				mov eax, [esp + 8];
 				mov[eax], ebx;
@@ -271,7 +294,7 @@ namespace SafeCall {
 				lea ebx, [eax + 4];
 				ret 4;
 
-				ReturnHereFromGadget:
+ReturnHereFromGadget:
 				push[ebx + 4];
 				mov ebx, [ebx - 4];
 				ret;
@@ -279,7 +302,8 @@ namespace SafeCall {
 		}
 
 		template <typename T, typename... Parameters>
-		inline __declspec(naked) T __cdecl Cdecl(uintptr_t, Data&, uintptr_t, Parameters...) {
+		inline __declspec(naked) T __cdecl Cdecl(uintptr_t, Data&, uintptr_t, Parameters...)
+		{
 			__asm {
 				mov eax, [esp + 8];
 				mov[eax], ebx;
@@ -290,7 +314,7 @@ namespace SafeCall {
 				lea ebx, [eax + 4];
 				ret 4;
 
-				ReturnHereFromGadget:
+ReturnHereFromGadget:
 				sub esp, 12;
 				push[ebx + 4];
 				mov ebx, [ebx - 4];
@@ -299,25 +323,30 @@ namespace SafeCall {
 		}
 	}
 
-	namespace Type {
+	namespace Type
+	{
 		template <typename T, typename... Parameters>
-		inline T Fastcall(uintptr_t ecx, uintptr_t edx, uintptr_t functionAddress, uintptr_t gadgetAddress, Parameters... parameters) {
+		inline T Fastcall(uintptr_t ecx, uintptr_t edx, uintptr_t functionAddress, uintptr_t gadgetAddress, Parameters... parameters)
+		{
 			Impl::Data data;
 			return Impl::Fastcall<T>(ecx, edx, functionAddress, data, gadgetAddress, parameters...);
 		}
 
 		template <typename T, typename... Parameters>
-		inline T Thiscall(uintptr_t ecx, uintptr_t functionAddress, uintptr_t gadgetAddress, Parameters... parameters) {
+		inline T Thiscall(uintptr_t ecx, uintptr_t functionAddress, uintptr_t gadgetAddress, Parameters... parameters)
+		{
 			return Fastcall<T>(ecx, NULL, functionAddress, gadgetAddress, parameters...);
 		}
 
 		template <typename T, typename... Parameters>
-		inline T Stdcall(uintptr_t functionAddress, uintptr_t gadgetAddress, Parameters... parameters) {
+		inline T Stdcall(uintptr_t functionAddress, uintptr_t gadgetAddress, Parameters... parameters)
+		{
 			return Thiscall<T>(NULL, functionAddress, gadgetAddress, parameters...);
 		}
 
 		template <typename T, typename... Parameters>
-		inline T Cdecl(uintptr_t functionAddress, uintptr_t gadgetAddress, Parameters... parameters) {
+		inline T Cdecl(uintptr_t functionAddress, uintptr_t gadgetAddress, Parameters... parameters)
+		{
 			Impl::Data data{};
 			return Impl::Cdecl<T>(functionAddress, data, gadgetAddress, parameters...);
 		}
