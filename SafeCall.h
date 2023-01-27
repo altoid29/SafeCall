@@ -92,7 +92,7 @@ namespace SafeCall
 {
 	namespace Address
 	{
-		inline HMODULE GetModule(const std::string moduleName)
+		inline HMODULE GetModule(std::string moduleName)
 		{
 			// Get PEB data.
 #ifdef _WIN64
@@ -167,7 +167,7 @@ namespace SafeCall
 			return list;
 		}*/
 
-		inline uintptr_t GetExport(const std::string moduleName, const std::string exportName)
+		inline uintptr_t GetExport(std::string moduleName, std::string exportName)
 		{
 			unsigned char* base = reinterpret_cast<unsigned char*>(GetModule(moduleName));
 			if (!base)
@@ -196,7 +196,7 @@ namespace SafeCall
 			return NULL;
 		}
 
-		inline uintptr_t GetGadget(const std::string moduleName)
+		inline uintptr_t GetGadget(std::string moduleName)
 		{
 			constexpr const char* signature = "FF 23"; // jmp dword ptr [ebx]
 			std::vector<uint8_t*>addresses{};
