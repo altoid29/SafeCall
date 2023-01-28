@@ -282,7 +282,7 @@ namespace SafeCall
 		};
 
 		template <typename T, typename... Parameters>
-		inline __declspec(naked) T __fastcall Fastcall(uintptr_t, uintptr_t, uintptr_t, Data&, uintptr_t, Parameters...)
+		inline __declspec(naked) T __fastcall Fastcall(uintptr_t, uintptr_t, uintptr_t, Data&, uintptr_t, Parameters...) noexcept
 		{
 			__asm
 			{
@@ -303,7 +303,7 @@ ReturnHereFromGadget:
 		}
 
 		template <typename T, typename... Parameters>
-		inline __declspec(naked) T __cdecl Cdecl(uintptr_t, Data&, uintptr_t, Parameters...)
+		inline __declspec(naked) T __cdecl Cdecl(uintptr_t, Data&, uintptr_t, Parameters...) noexcept
 		{
 			__asm 
 			{
@@ -328,26 +328,26 @@ ReturnHereFromGadget:
 	namespace Type
 	{
 		template <typename T, typename... Parameters>
-		inline T Fastcall(uintptr_t ecx, uintptr_t edx, uintptr_t functionAddress, uintptr_t gadgetAddress, Parameters... parameters)
+		inline T Fastcall(uintptr_t ecx, uintptr_t edx, uintptr_t functionAddress, uintptr_t gadgetAddress, Parameters... parameters) noexcept
 		{
 			Impl::Data data;
 			return Impl::Fastcall<T>(ecx, edx, functionAddress, data, gadgetAddress, parameters...);
 		}
 
 		template <typename T, typename... Parameters>
-		inline T Thiscall(uintptr_t ecx, uintptr_t functionAddress, uintptr_t gadgetAddress, Parameters... parameters)
+		inline T Thiscall(uintptr_t ecx, uintptr_t functionAddress, uintptr_t gadgetAddress, Parameters... parameters) noexcept
 		{
 			return Fastcall<T>(ecx, NULL, functionAddress, gadgetAddress, parameters...);
 		}
 
 		template <typename T, typename... Parameters>
-		inline T Stdcall(uintptr_t functionAddress, uintptr_t gadgetAddress, Parameters... parameters)
+		inline T Stdcall(uintptr_t functionAddress, uintptr_t gadgetAddress, Parameters... parameters) noexcept
 		{
 			return Thiscall<T>(NULL, functionAddress, gadgetAddress, parameters...);
 		}
 
 		template <typename T, typename... Parameters>
-		inline T Cdecl(uintptr_t functionAddress, uintptr_t gadgetAddress, Parameters... parameters)
+		inline T Cdecl(uintptr_t functionAddress, uintptr_t gadgetAddress, Parameters... parameters) noexcept
 		{
 			Impl::Data data{};
 			return Impl::Cdecl<T>(functionAddress, data, gadgetAddress, parameters...);
