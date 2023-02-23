@@ -130,43 +130,6 @@ namespace SafeCall
 			return nullptr;
 		}
 
-		// Note - 1.26.2023 - May eventually be used.
-		/*inline std::vector<std::string>GetAllModules(std::vector<std::string>list) {
-			// Get PEB data.
-#ifdef _WIN64
-			PEB_NEW* peb = (PEB_NEW*)__readgsqword(0x60);
-#else
-			PEB_NEW* peb = (PEB_NEW*)__readfsdword(0x30);
-#endif
-			if (!peb)
-				return list;
-
-			PLOADER_TABLE_ENTRY tableEntry = nullptr;
-			PLIST_ENTRY listEntry = peb->Ldr->InLoadOrderModuleList.Flink;
-
-			// Iterate all modules.
-			while (listEntry != &peb->Ldr->InLoadOrderModuleList && listEntry) {
-				// Initialize tableEntry.
-				tableEntry = CONTAINING_RECORD(listEntry, LOADER_TABLE_ENTRY, InLoadOrderLinks);
-
-				// Get wstring dllNameBuffer.
-				std::wstring buf(tableEntry->BaseDllName.Buffer);
-
-				// Convert to std::string, from begin to end.
-				std::string name(buf.begin(), buf.end());
-
-				// Lowercase conversion.
-				std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-
-				list.push_back(name);
-
-				// Update listEntry.
-				listEntry = listEntry->Flink;
-			}
-
-			return list;
-		}*/
-
 		inline uintptr_t GetExport(std::string moduleName, std::string exportName)
 		{
 			unsigned char* base = reinterpret_cast<unsigned char*>(GetModule(moduleName));
